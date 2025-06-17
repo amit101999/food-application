@@ -1,0 +1,795 @@
+// MongoDB Schemas for Food Delivery Application
+
+// 1. User Schema (Customers)
+const userSchema = {
+  _id: ObjectId,
+  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true, unique: true },
+  password: { type: String, required: true }, // hashed
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  avatar: String,
+  dateOfBirth: Date,
+  gender: { type: String, enum: ['male', 'female', 'other'] },
+  
+  // Authentication
+  isEmailVerified: { type: Boolean, default: false },
+  isPhoneVerified: { type: Boolean, default: false },
+  emailVerificationToken: String,
+  phoneVerificationToken: String,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  
+  // Social Login
+  socialLogin: {
+    google: {
+      id: String,
+      email: String
+    },
+    facebook: {
+      id: String,
+      email: String
+    }
+  },
+  
+  // Addresses
+  addresses: [{
+    _id: ObjectId,
+    type: { type: String, enum: ['home', 'work', 'other'], default: 'home' },
+    addressLine1: { type: String, required: true },
+    addressLine2: String,
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zipCode: { type: String, required: true },
+    country: { type: String, default: 'India' },
+    landmark: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    },
+    isDefault: { type: Boolean, default: false }
+  }],
+  
+  // Payment Methods
+  paymentMethods: [{
+    _id: ObjectId,
+    type: { type: String, enum: ['card', 'upi', 'wallet', 'netbanking'] },
+    provider: String, // visa, mastercard, paytm, etc.
+    last4: String, // last 4 digits for cards
+    isDefault: { type: Boolean, default: false },
+    details: Mixed // encrypted payment details
+  }],
+  
+  // Preferences
+  preferences: {
+    cuisine: [String], // preferred cuisines
+    dietaryRestrictions: [{ type: String, enum: ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free'] }],
+    spiceLevel: { type: String, enum: ['mild', 'medium', 'hot', 'extra-hot'] },
+    notifications: {
+      email: { type: Boolean, default: true },
+      sms: { type: Boolean, default: true },
+      push: { type: Boolean, default: true },
+      promotional: { type: Boolean, default: true }
+    }
+  },
+  
+  // Favorites
+  favoriteRestaurants: [{ type: ObjectId, ref: 'Restaurant' }],
+  favoriteItems: [{ type: ObjectId, ref: 'MenuItem' }],
+  
+  // Activity
+  lastLogin: Date,
+  loginCount: { type: Number, default: 0 },
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 2. Restaurant Schema
+const restaurantSchema = {
+  _id: ObjectId,
+  name: { type: String, required: true },
+  slug: { type: String, unique: true },
+  description: String,
+  
+  // Owner Information
+  ownerId: { type: ObjectId, ref: 'RestaurantOwner', required: true },
+  
+  // Contact & Location
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  address: {
+    addressLine1: { type: String, required: true },
+    addressLine2: String,
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zipCode: { type: String, required: true },
+    country: { type: String, default: 'India' },
+    coordinates: {
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true }
+    }
+  },
+  
+  // Business Details
+  cuisine: [{ type: String, required: true }], // Indian, Chinese, Italian, etc.
+  priceRange: { type: String, enum: ['$', '$$', '$$$', '$$$$'], required: true },
+  
+  // Operating Hours
+  operatingHours: [{
+    day: { type: String, enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] },
+    isOpen: { type: Boolean, default: true },
+    openTime: String, // "09:00"
+    closeTime: String, // "23:00"
+    breakStart: String, // for afternoon break
+    breakEnd: String
+  }],
+  
+  // Delivery Settings
+  deliverySettings: {
+    isDeliveryAvailable: { type: Boolean, default: true },
+    isPickupAvailable: { type: Boolean, default: true },
+    deliveryRadius: { type: Number, default: 5 }, // in km
+    minOrderAmount: { type: Number, default: 0 },
+    deliveryFee: { type: Number, default: 0 },
+    freeDeliveryAbove: Number,
+    estimatedDeliveryTime: { type: Number, default: 30 }, // in minutes
+    deliveryZones: [{
+      name: String,
+      coordinates: [[Number]], // polygon coordinates
+      deliveryFee: Number,
+      minOrderAmount: Number
+    }]
+  },
+  
+  // Media
+  images: {
+    logo: String,
+    cover: String,
+    gallery: [String]
+  },
+  
+  // Ratings & Reviews
+  rating: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 },
+    breakdown: {
+      5: { type: Number, default: 0 },
+      4: { type: Number, default: 0 },
+      3: { type: Number, default: 0 },
+      2: { type: Number, default: 0 },
+      1: { type: Number, default: 0 }
+    }
+  },
+  
+  // Business Metrics
+  totalOrders: { type: Number, default: 0 },
+  totalRevenue: { type: Number, default: 0 },
+  
+  // Status & Verification
+  status: { type: String, enum: ['pending', 'approved', 'rejected', 'suspended', 'closed'], default: 'pending' },
+  isVerified: { type: Boolean, default: false },
+  isFeatured: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true },
+  
+  // Commission
+  commissionRate: { type: Number, default: 15 }, // percentage
+  
+  // Licenses & Documents
+  documents: {
+    fssaiLicense: String,
+    gstNumber: String,
+    panCard: String,
+    businessLicense: String
+  },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 3. Restaurant Owner Schema
+const restaurantOwnerSchema = {
+  _id: ObjectId,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  phone: { type: String, required: true },
+  
+  // Profile
+  avatar: String,
+  dateOfBirth: Date,
+  
+  // Address
+  address: {
+    addressLine1: String,
+    addressLine2: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: { type: String, default: 'India' }
+  },
+  
+  // Bank Details
+  bankDetails: {
+    accountNumber: String, // encrypted
+    accountHolderName: String,
+    bankName: String,
+    ifscCode: String,
+    branchName: String
+  },
+  
+  // Documents
+  documents: {
+    idProof: String, // URL to uploaded document
+    addressProof: String,
+    photo: String
+  },
+  
+  // Verification
+  isVerified: { type: Boolean, default: false },
+  verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  
+  // Restaurants owned
+  restaurants: [{ type: ObjectId, ref: 'Restaurant' }],
+  
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+  lastLogin: Date,
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 4. Menu Category Schema
+const menuCategorySchema = {
+  _id: ObjectId,
+  restaurantId: { type: ObjectId, ref: 'Restaurant', required: true },
+  name: { type: String, required: true },
+  description: String,
+  image: String,
+  sortOrder: { type: Number, default: 0 },
+  isActive: { type: Boolean, default: true },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 5. Menu Item Schema
+const menuItemSchema = {
+  _id: ObjectId,
+  restaurantId: { type: ObjectId, ref: 'Restaurant', required: true },
+  categoryId: { type: ObjectId, ref: 'MenuCategory', required: true },
+  
+  name: { type: String, required: true },
+  description: String,
+  images: [String],
+  
+  // Pricing
+  price: { type: Number, required: true },
+  originalPrice: Number, // for discounts
+  
+  // Variants (for different sizes, etc.)
+  variants: [{
+    name: String, // Small, Medium, Large
+    price: Number,
+    isDefault: { type: Boolean, default: false }
+  }],
+  
+  // Customizations
+  customizations: [{
+    name: String, // Toppings, Add-ons
+    type: { type: String, enum: ['single', 'multiple'] },
+    isRequired: { type: Boolean, default: false },
+    options: [{
+      name: String,
+      price: { type: Number, default: 0 },
+      isAvailable: { type: Boolean, default: true }
+    }]
+  }],
+  
+  // Item Details
+  preparationTime: { type: Number, default: 15 }, // in minutes
+  calories: Number,
+  ingredients: [String],
+  allergens: [String],
+  
+  // Dietary Information
+  isVegetarian: { type: Boolean, default: false },
+  isVegan: { type: Boolean, default: false },
+  isGlutenFree: { type: Boolean, default: false },
+  spiceLevel: { type: String, enum: ['mild', 'medium', 'hot', 'extra-hot'] },
+  
+  // Availability
+  isAvailable: { type: Boolean, default: true },
+  availableQuantity: Number, // for limited items
+  
+  // Ratings
+  rating: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+  
+  // Popularity
+  orderCount: { type: Number, default: 0 },
+  isFeatured: { type: Boolean, default: false },
+  isRecommended: { type: Boolean, default: false },
+  
+  sortOrder: { type: Number, default: 0 },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 6. Order Schema
+const orderSchema = {
+  _id: ObjectId,
+  orderNumber: { type: String, unique: true, required: true },
+  
+  // Customer & Restaurant
+  customerId: { type: ObjectId, ref: 'User', required: true },
+  restaurantId: { type: ObjectId, ref: 'Restaurant', required: true },
+  
+  // Order Items
+  items: [{
+    menuItemId: { type: ObjectId, ref: 'MenuItem', required: true },
+    name: String, // snapshot of item name
+    price: Number, // snapshot of item price
+    quantity: { type: Number, required: true },
+    
+    // Selected variant and customizations
+    selectedVariant: {
+      name: String,
+      price: Number
+    },
+    customizations: [{
+      name: String,
+      selectedOptions: [{
+        name: String,
+        price: Number
+      }]
+    }],
+    
+    specialInstructions: String,
+    itemTotal: Number
+  }],
+  
+  // Pricing
+  subtotal: { type: Number, required: true },
+  taxes: [{
+    name: String, // GST, Service Tax
+    rate: Number, // percentage
+    amount: Number
+  }],
+  deliveryFee: { type: Number, default: 0 },
+  platformFee: { type: Number, default: 0 },
+  discount: {
+    type: String, // coupon, offer
+    code: String,
+    amount: Number,
+    description: String
+  },
+  totalAmount: { type: Number, required: true },
+  
+  // Delivery Details
+  deliveryAddress: {
+    type: String, // home, work, other
+    addressLine1: String,
+    addressLine2: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    landmark: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    },
+    contactPhone: String
+  },
+  
+  // Order Type
+  orderType: { type: String, enum: ['delivery', 'pickup'], required: true },
+  
+  // Payment
+  paymentMethod: { type: String, enum: ['card', 'cash', 'upi', 'wallet'], required: true },
+  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
+  paymentId: String, // from payment gateway
+  
+  // Status & Tracking
+  status: { 
+    type: String, 
+    enum: ['placed', 'confirmed', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'cancelled'],
+    default: 'placed'
+  },
+  
+  // Timestamps
+  placedAt: { type: Date, default: Date.now },
+  confirmedAt: Date,
+  preparingAt: Date,
+  readyAt: Date,
+  pickedUpAt: Date,
+  deliveredAt: Date,
+  cancelledAt: Date,
+  
+  // Estimated times
+  estimatedPreparationTime: Number, // minutes
+  estimatedDeliveryTime: Date,
+  
+  // Delivery Partner
+  deliveryPartnerId: { type: ObjectId, ref: 'DeliveryPartner' },
+  
+  // Special Instructions
+  specialInstructions: String,
+  
+  // Cancellation
+  cancellationReason: String,
+  cancelledBy: { type: String, enum: ['customer', 'restaurant', 'admin'] },
+  
+  // Reviews
+  customerReview: {
+    rating: Number,
+    comment: String,
+    reviewedAt: Date
+  },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 7. Delivery Partner Schema
+const deliveryPartnerSchema = {
+  _id: ObjectId,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  phone: { type: String, required: true, unique: true },
+  
+  // Profile
+  avatar: String,
+  dateOfBirth: Date,
+  gender: { type: String, enum: ['male', 'female', 'other'] },
+  
+  // Address
+  address: {
+    addressLine1: String,
+    addressLine2: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: { type: String, default: 'India' }
+  },
+  
+  // Vehicle Information
+  vehicle: {
+    type: { type: String, enum: ['bike', 'scooter', 'bicycle', 'car'], required: true },
+    make: String,
+    model: String,
+    year: Number,
+    licensePlate: String,
+    color: String,
+    insuranceExpiry: Date,
+    registrationExpiry: Date
+  },
+  
+  // Documents
+  documents: {
+    drivingLicense: {
+      number: String,
+      expiryDate: Date,
+      imageUrl: String,
+      isVerified: { type: Boolean, default: false }
+    },
+    aadharCard: {
+      number: String, // encrypted
+      imageUrl: String,
+      isVerified: { type: Boolean, default: false }
+    },
+    panCard: {
+      number: String,
+      imageUrl: String,
+      isVerified: { type: Boolean, default: false }
+    },
+    vehicleRegistration: {
+      number: String,
+      imageUrl: String,
+      isVerified: { type: Boolean, default: false }
+    },
+    insurance: {
+      policyNumber: String,
+      imageUrl: String,
+      expiryDate: Date,
+      isVerified: { type: Boolean, default: false }
+    }
+  },
+  
+  // Bank Details
+  bankDetails: {
+    accountNumber: String, // encrypted
+    accountHolderName: String,
+    bankName: String,
+    ifscCode: String,
+    branchName: String
+  },
+  
+  // Verification & Status
+  verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  isOnline: { type: Boolean, default: false },
+  isAvailable: { type: Boolean, default: false },
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+  
+  // Location
+  currentLocation: {
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    },
+    lastUpdated: Date
+  },
+  
+  // Working Areas
+  workingAreas: [{
+    city: String,
+    areas: [String] // area names
+  }],
+  
+  // Ratings & Performance
+  rating: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+  
+  // Statistics
+  stats: {
+    totalDeliveries: { type: Number, default: 0 },
+    completedDeliveries: { type: Number, default: 0 },
+    cancelledDeliveries: { type: Number, default: 0 },
+    totalEarnings: { type: Number, default: 0 },
+    totalDistance: { type: Number, default: 0 }, // in km
+    averageRating: { type: Number, default: 0 },
+    onTimeDeliveryRate: { type: Number, default: 0 }
+  },
+  
+  lastLogin: Date,
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 8. Review Schema
+const reviewSchema = {
+  _id: ObjectId,
+  orderId: { type: ObjectId, ref: 'Order', required: true },
+  customerId: { type: ObjectId, ref: 'User', required: true },
+  restaurantId: { type: ObjectId, ref: 'Restaurant', required: true },
+  
+  // Ratings (1-5 scale)
+  overallRating: { type: Number, required: true, min: 1, max: 5 },
+  foodRating: { type: Number, min: 1, max: 5 },
+  deliveryRating: { type: Number, min: 1, max: 5 },
+  
+  // Review Content
+  title: String,
+  comment: String,
+  photos: [String],
+  
+  // Item-specific reviews
+  itemReviews: [{
+    menuItemId: { type: ObjectId, ref: 'MenuItem' },
+    rating: { type: Number, min: 1, max: 5 },
+    comment: String
+  }],
+  
+  // Delivery Partner Review (optional)
+  deliveryPartnerRating: { type: Number, min: 1, max: 5 },
+  
+  // Status
+  isVerified: { type: Boolean, default: false },
+  isVisible: { type: Boolean, default: true },
+  
+  // Moderation
+  reportCount: { type: Number, default: 0 },
+  isReported: { type: Boolean, default: false },
+  moderationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 9. Coupon Schema
+const couponSchema = {
+  _id: ObjectId,
+  code: { type: String, required: true, unique: true, uppercase: true },
+  title: { type: String, required: true },
+  description: String,
+  
+  // Discount Details
+  discountType: { type: String, enum: ['percentage', 'fixed', 'free_delivery'], required: true },
+  discountValue: { type: Number, required: true }, // percentage or fixed amount
+  maxDiscountAmount: Number, // for percentage discounts
+  minOrderAmount: { type: Number, default: 0 },
+  
+  // Validity
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  
+  // Usage Limits
+  usageLimit: Number, // total usage limit
+  usageLimitPerUser: { type: Number, default: 1 },
+  currentUsage: { type: Number, default: 0 },
+  
+  // Applicability
+  applicableFor: { type: String, enum: ['all', 'first_order', 'specific_restaurants'], default: 'all' },
+  applicableRestaurants: [{ type: ObjectId, ref: 'Restaurant' }],
+  applicableUsers: [{ type: ObjectId, ref: 'User' }], // for targeted coupons
+  
+  // Status
+  isActive: { type: Boolean, default: true },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// 10. Notification Schema
+const notificationSchema = {
+  _id: ObjectId,
+  recipientId: { type: ObjectId, required: true },
+  recipientType: { type: String, enum: ['user', 'restaurant', 'delivery_partner', 'admin'], required: true },
+  
+  type: { 
+    type: String, 
+    enum: ['order_update', 'promotional', 'system', 'payment', 'review_reminder'],
+    required: true 
+  },
+  
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  
+  // Additional data
+  data: {
+    orderId: ObjectId,
+    restaurantId: ObjectId,
+    deepLink: String,
+    actionButton: {
+      text: String,
+      action: String
+    }
+  },
+  
+  // Delivery Channels
+  channels: {
+    push: { type: Boolean, default: true },
+    email: { type: Boolean, default: false },
+    sms: { type: Boolean, default: false }
+  },
+  
+  // Status
+  isRead: { type: Boolean, default: false },
+  readAt: Date,
+  
+  // Delivery Status
+  deliveryStatus: {
+    push: { type: String, enum: ['pending', 'sent', 'delivered', 'failed'] },
+    email: { type: String, enum: ['pending', 'sent', 'delivered', 'failed'] },
+    sms: { type: String, enum: ['pending', 'sent', 'delivered', 'failed'] }
+  },
+  
+  createdAt: { type: Date, default: Date.now },
+  scheduledFor: Date // for scheduled notifications
+};
+
+// 11. Admin User Schema
+const adminUserSchema = {
+  _id: ObjectId,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  
+  role: { 
+    type: String, 
+    enum: ['super_admin', 'admin', 'manager', 'support'], 
+    required: true 
+  },
+  
+  permissions: [{
+    module: String, // users, restaurants, orders, etc.
+    actions: [String] // create, read, update, delete
+  }],
+  
+  avatar: String,
+  isActive: { type: Boolean, default: true },
+  lastLogin: Date,
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+};
+
+// Indexes for better performance
+const indexes = {
+  // User indexes
+  'users': [
+    { email: 1 },
+    { phone: 1 },
+    { 'addresses.coordinates': '2dsphere' },
+    { status: 1 },
+    { createdAt: -1 }
+  ],
+  
+  // Restaurant indexes
+  'restaurants': [
+    { slug: 1 },
+    { 'address.coordinates': '2dsphere' },
+    { cuisine: 1 },
+    { status: 1 },
+    { isActive: 1 },
+    { 'rating.average': -1 },
+    { priceRange: 1 },
+    { createdAt: -1 }
+  ],
+  
+  // Menu items indexes
+  'menuitems': [
+    { restaurantId: 1, categoryId: 1 },
+    { restaurantId: 1, isAvailable: 1 },
+    { name: 'text', description: 'text' }, // text search
+    { isVegetarian: 1 },
+    { isVegan: 1 },
+    { 'rating.average': -1 },
+    { orderCount: -1 }
+  ],
+  
+  // Order indexes
+  'orders': [
+    { customerId: 1, createdAt: -1 },
+    { restaurantId: 1, createdAt: -1 },
+    { deliveryPartnerId: 1, createdAt: -1 },
+    { orderNumber: 1 },
+    { status: 1 },
+    { placedAt: -1 },
+    { 'deliveryAddress.coordinates': '2dsphere' }
+  ],
+  
+  // Delivery partner indexes
+  'deliverypartners': [
+    { email: 1 },
+    { phone: 1 },
+    { 'currentLocation.coordinates': '2dsphere' },
+    { isOnline: 1, isAvailable: 1 },
+    { verificationStatus: 1 },
+    { status: 1 }
+  ],
+  
+  // Review indexes
+  'reviews': [
+    { restaurantId: 1, createdAt: -1 },
+    { customerId: 1, createdAt: -1 },
+    { orderId: 1 },
+    { overallRating: -1 },
+    { isVisible: 1 }
+  ],
+  
+  // Notification indexes
+  'notifications': [
+    { recipientId: 1, createdAt: -1 },
+    { recipientType: 1, isRead: 1 },
+    { type: 1 },
+    { scheduledFor: 1 }
+  ]
+};
+
+// Export schemas for use in your application
+module.exports = {
+  userSchema,
+  restaurantSchema,
+  restaurantOwnerSchema,
+  menuCategorySchema,
+  menuItemSchema,
+  orderSchema,
+  deliveryPartnerSchema,
+  reviewSchema,
+  couponSchema,
+  notificationSchema,
+  adminUserSchema,
+  indexes
+};

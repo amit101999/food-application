@@ -1,0 +1,247 @@
+Customer App (Web/Mobile)
+Core Pages & Components:
+
+Authentication Module
+
+Login/Register pages
+OTP verification
+Social login (Google, Facebook)
+Password reset/change
+Profile verification
+
+
+Home & Discovery
+
+Hero banner with search
+Restaurant listings with filters
+Cuisine categories
+Popular/trending restaurants
+Location-based suggestions
+Promotional banners
+
+
+Restaurant & Menu Module
+
+Restaurant detail page
+Menu browsing with categories
+Item details with images/descriptions
+Reviews and ratings display
+Restaurant info (hours, delivery time, ratings)
+Search within restaurant menu
+
+
+Cart & Checkout
+
+Add to cart functionality
+Cart management (quantity, remove items)
+Customization options (size, toppings, notes)
+Checkout flow
+Address selection/management
+Payment method selection
+Order summary and confirmation
+
+
+Order Management
+
+Order history
+Real-time order tracking
+Order status updates
+Reorder functionality
+Order cancellation
+Receipt/invoice download
+
+
+User Profile & Account
+
+Profile management
+Address book management
+Payment methods
+Preferences settings
+Notification settings
+Support/help center
+
+
+Reviews & Ratings
+
+Restaurant review system
+Food item ratings
+Photo uploads
+Review management
+
+
+
+
+Advanced Features:
+
+Real-time Tracking
+
+Live delivery tracking with map
+Delivery partner details
+ETA updates
+GPS integration
+
+
+Search & Filters
+
+Advanced search with filters
+Cuisine-based filtering
+Price range filters
+Dietary preferences (vegan, gluten-free)
+Delivery time filtering
+Rating-based filtering
+
+
+Personalization
+
+Recommendation engine
+Favorite restaurants
+Order history analysis
+Personalized offers
+
+
+
+
+
+######################
+2. Restaurant Dashboard (Web)
+Core Modules:
+
+Restaurant Management
+
+Restaurant profile setup
+Business information
+Operating hours management
+Delivery zones setup
+Restaurant images/gallery
+
+
+Menu Management
+
+Menu CRUD operations
+Category management
+Item availability toggle
+Pricing management
+Special offers/discounts
+Bulk upload/download
+
+
+Order Management
+
+Order queue management
+Order acceptance/rejection
+Preparation time estimation
+Order status updates
+Print receipts/KOT
+
+
+Analytics & Reports
+
+Sales analytics
+Popular items analysis
+Customer feedback analysis
+Revenue tracking
+Order patterns
+Performance metrics
+
+
+Staff Management
+
+Staff roles and permissions
+Staff accounts management
+Activity logs
+
+
+
+##################
+
+
+Delivery Partner App (Mobile)
+Core Features:
+
+Authentication & Profile
+
+Partner registration/login
+Document verification
+Profile management
+Vehicle information
+
+
+Order Assignment
+
+Available orders list
+Order acceptance/rejection
+Route optimization
+Delivery instructions
+
+
+Delivery Management
+
+Pick-up confirmation
+Real-time location sharing
+Delivery completion
+Cash collection management
+Photo proof of delivery
+
+
+Earnings & Analytics
+
+Earnings tracking
+Trip history
+Performance metrics
+Payout information
+
+
+
+
+#########################
+4. Admin Panel (Web)
+Core Modules:
+
+Dashboard Overview
+
+Key metrics and KPIs
+Real-time order monitoring
+Revenue analytics
+User activity tracking
+
+
+User Management
+
+Customer management
+Restaurant partner management
+Delivery partner management
+Role-based access control
+
+
+Restaurant Management
+
+Restaurant approval/rejection
+Menu moderation
+Commission management
+Performance monitoring
+
+
+Order Management
+
+Order monitoring
+Dispute resolution
+Refund management
+Order analytics
+
+
+Content Management
+
+Banner management
+Promotional content
+Category management
+FAQ management
+
+
+Financial Management
+
+Commission tracking
+Payout management
+Transaction monitoring
+Revenue reports
+
+
